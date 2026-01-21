@@ -1,177 +1,236 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
     {{-- =============== HEADER & INFO =============== --}}
     <div class="mb-8 flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white">Sirkulasi Cepat</h1>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Scan barcode kartu anggota dan buku untuk memproses Pinjam & Kembali.</p>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-500">
+                Sirkulasi Buku
+            </p>
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white">
+                Halaman Pinjam &amp; Kembali
+            </h1>
+            <p class="mt-2 text-xs md:text-sm text-slate-500 dark:text-slate-400">
+                Urutan mudah untuk petugas dan siswa: scan kartu siswa, lalu scan buku.
+            </p>
         </div>
         <div class="hidden sm:block">
-            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 text-xs font-bold border border-indigo-100 dark:border-indigo-800">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full 
+                         bg-sky-50 dark:bg-slate-800 text-sky-700 dark:text-sky-200 
+                         text-[11px] font-semibold border border-sky-100 dark:border-slate-700">
                 <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                Scanner Ready
+                Scanner siap digunakan
             </span>
         </div>
     </div>
 
-    {{-- =============== ALERTS (Tema Keren & Rich) =============== --}}
+    {{-- =============== ALERTS =============== --}}
     @if(session('ok'))
-    <div class="mb-6 p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800/50 flex items-center gap-3">
-        <div class="flex-shrink-0 p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/50">
-            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div class="mb-4 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 flex items-center gap-3">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/60"></div>
+            <div class="flex-1">
+                <p class="font-medium text-emerald-800 dark:text-emerald-300 text-sm">{{ session('ok') }}</p>
+            </div>
         </div>
-        <div class="flex-1">
-            <p class="font-medium text-emerald-800 dark:text-emerald-300">{{ session('ok') }}</p>
-        </div>
-    </div>
-    @endif
-    @if(session('err'))
-    <div class="mb-6 p-4 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 border border-rose-200 dark:border-rose-800/50 flex items-center gap-3">
-        <div class="flex-shrink-0 p-2 rounded-lg bg-rose-100 dark:bg-rose-900/50">
-            <svg class="w-5 h-5 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        </div>
-        <div class="flex-1">
-            <p class="font-medium text-rose-800 dark:text-rose-300">{{ session('err') }}</p>
-        </div>
-    </div>
     @endif
 
+    @if($errors->any())
+        <div class="mb-4 p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 flex items-start gap-3">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-100 dark:bg-rose-900/60"></div>
+            <div class="flex-1 text-sm">
+                <p class="font-semibold text-rose-800 dark:text-rose-200 mb-1">
+                    Terjadi kesalahan:
+                </p>
+                <ul class="list-disc list-inside text-rose-700 dark:text-rose-300 space-y-0.5">
+                    @foreach($errors->all() as $err)
+                        <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
+
+    @if(session('err'))
+        <div class="mb-4 p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/50 flex items-center gap-3">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-100 dark:bg-rose-900/60"></div>
+            <div class="flex-1">
+                <p class="font-medium text-rose-800 dark:text-rose-300 text-sm">{{ session('err') }}</p>
+            </div>
+        </div>
+    @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        {{-- KOLOM KIRI (7/12): SCANNER + RIWAYAT --}}
+        {{-- ========== KIRI: SCANNER + RIWAYAT ========== --}}
         <div class="lg:col-span-7 flex flex-col gap-6">
 
-            {{-- 1. SCANNER PANEL (Card Keren & Fokus) --}}
-            <section id="scanner-panel" class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-indigo-200 dark:border-indigo-700 relative overflow-hidden">
-                
-                {{-- Hiasan Background Simpel --}}
-                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 rounded-full bg-indigo-50 dark:bg-indigo-900/10 pointer-events-none"></div>
-
-                <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4 relative z-10">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-                    Scanner Otomatis
-                </h2>
-
-                {{-- Mode Switcher --}}
-                <div class="flex p-1 bg-slate-100 dark:bg-slate-900/50 rounded-xl mb-6 relative z-10">
-                    <button id="modeBorrow" class="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 shadow-sm bg-white text-indigo-600 dark:bg-slate-700 dark:text-white ring-1 ring-slate-200 dark:ring-white/10">
-                        <span>📤</span> Mode Pinjam
-                    </button>
-                    <button id="modeReturn" class="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-700">
-                        <span>📥</span> Mode Kembali
-                    </button>
+            {{-- 1. PANEL SCANNER --}}
+            <section id="scanner-panel"
+                     class="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 shadow-sm border border-sky-100 dark:border-slate-800">
+                {{-- Judul + Mode --}}
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                    <div>
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-500">
+                            Langkah 1
+                        </p>
+                        <h2 class="text-lg md:text-xl font-bold text-slate-800 dark:text-white">
+                            Scan barcode untuk transaksi cepat
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Urutan: scan kartu siswa &rarr; scan buku. Sistem otomatis memilih pinjam / kembali sesuai mode.
+                        </p>
+                    </div>
+                    <div class="w-full md:w-auto">
+                        <div class="flex bg-slate-100 dark:bg-slate-800 rounded-full p-1">
+                            <button id="modeBorrow" type="button"
+                                    class="flex-1 text-center text-xs font-semibold rounded-full py-2
+                                           bg-white text-sky-700 dark:bg-slate-700 dark:text-white shadow-sm">
+                                Mode Pinjam
+                            </button>
+                            <button id="modeReturn" type="button"
+                                    class="flex-1 text-center text-xs font-semibold rounded-full py-2
+                                           text-slate-500 dark:text-slate-400">
+                                Mode Kembali
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="space-y-4 relative z-10">
-                    {{-- Main Input --}}
-                    <div class="relative group">
-                        {{-- Efek Glow Lebih Terkontrol --}}
-                        <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl opacity-30 group-focus-within:opacity-100 transition duration-500 blur-sm"></div>
-                        <input id="scanInput" autocomplete="off" autofocus tabindex="1"
-                            class="relative block w-full rounded-xl bg-white dark:bg-slate-900 border-0 ring-1 ring-slate-200 dark:ring-slate-700 px-4 py-3 text-lg font-mono tracking-wider text-slate-800 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 transition-shadow"
-                            placeholder="Klik & Scan Barcode..."
+                {{-- Input scanner --}}
+                <div class="space-y-4">
+                    <div class="rounded-2xl border border-sky-200 bg-sky-50/60 dark:bg-slate-900 dark:border-sky-800 px-3 py-3">
+                        <input id="scanInput"
+                               autocomplete="off"
+                               autofocus
+                               tabindex="1"
+                               class="w-full rounded-xl bg-white dark:bg-slate-950/70 border-0 ring-1 ring-slate-200 dark:ring-slate-700
+                                      px-4 py-3 text-base sm:text-lg font-mono tracking-[0.22em] text-slate-800 dark:text-slate-50
+                                      placeholder:text-slate-400 focus:ring-2 focus:ring-sky-400 outline-none transition"
+                               placeholder="Klik di sini lalu scan barcode siswa..."
                         >
-                        <div class="absolute right-3 top-1/2 -translate-y-1/2">
-                            <span class="animate-pulse w-2 h-2 rounded-full bg-indigo-500"></span>
+                        <div class="mt-1 flex justify-between text-[11px] text-slate-400">
+                            <span>Kode akan terbaca otomatis, tanpa klik apa pun.</span>
+                            <span>[ESC] untuk menghapus</span>
                         </div>
                     </div>
-                    
-                    {{-- Display Readonly --}}
-                    <div class="grid grid-cols-2 gap-3 mt-2">
-                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700">
-                            <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 block">ID Siswa</label>
-                            <input id="scanStudent" readonly class="w-full bg-transparent border-none p-0 text-sm font-semibold text-slate-700 dark:text-slate-200 focus:ring-0" placeholder="Awaiting Scan...">
+
+                    {{-- error khusus scanner --}}
+                    @if($errors->has('student_barcode') || $errors->has('book_barcode'))
+                        <p class="text-xs font-medium text-rose-600 dark:text-rose-400">
+                            {{ $errors->first('student_barcode') ?: $errors->first('book_barcode') }}
+                        </p>
+                    @endif
+
+                    {{-- Tampilan terakhir terbaca --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-700">
+                            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 block mb-1">
+                                Barcode siswa
+                            </label>
+                            <input id="scanStudent"
+                                   readonly
+                                   class="w-full bg-transparent border-none p-0 text-sm font-semibold text-slate-700 dark:text-slate-200 focus:ring-0"
+                                   placeholder="Belum ada">
                         </div>
-                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700">
-                            <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 block">ID Buku</label>
-                            <input id="scanBook" readonly class="w-full bg-transparent border-none p-0 text-sm font-semibold text-slate-700 dark:text-slate-200 focus:ring-0" placeholder="Awaiting Scan...">
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-700">
+                            <label class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 block mb-1">
+                                Barcode buku
+                            </label>
+                            <input id="scanBook"
+                                   readonly
+                                   class="w-full bg-transparent border-none p-0 text-sm font-semibold text-slate-700 dark:text-slate-200 focus:ring-0"
+                                   placeholder="Belum ada">
                         </div>
                     </div>
                 </div>
 
-                {{-- HIDDEN FORMS --}}
+                {{-- HIDDEN FORMS (JANGAN DIUBAH ID-NYA) --}}
                 <form id="formBorrow" action="{{ route('circulation.borrow') }}" method="POST" class="hidden">
                     @csrf
-                    <input type="hidden" name="student_id" id="fBorrowStudent">
-                    <input type="hidden" name="book_id"    id="fBorrowBook">
+                    <input type="hidden" name="student_barcode" id="fBorrowStudent">
+                    <input type="hidden" name="book_barcode"    id="fBorrowBook">
                     <input type="hidden" name="days" value="7">
                 </form>
+
                 <form id="formReturn" action="{{ route('circulation.return') }}" method="POST" class="hidden">
                     @csrf
-                    <input type="hidden" name="student_id" id="fReturnStudent">
-                    <input type="hidden" name="book_id"    id="fReturnBook">
+                    <input type="hidden" name="student_barcode" id="fReturnStudent">
+                    <input type="hidden" name="book_barcode"    id="fReturnBook">
                 </form>
 
-                <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700 text-center">
-                    <span class="text-xs font-mono text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
-                        Tekan [ESC] untuk reset | Urutan: Siswa &rarr; Buku
+                <div class="mt-5 pt-3 border-t border-slate-100 dark:border-slate-700 text-center">
+                    <span class="inline-block text-[11px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+                        Urutan scan: siswa → buku · Tekan ESC untuk mengulang
                     </span>
                 </div>
             </section>
 
             {{-- 2. RIWAYAT SESI INI --}}
-            <section class="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col">
-                <div class="p-6 pb-0 mb-4 border-b border-slate-100 dark:border-slate-700">
-                    <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 pb-4">
-                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Riwayat Sesi Ini (15 Transaksi Terakhir)
+            <section class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col">
+                <div class="px-5 sm:px-6 pt-5 pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        Riwayat
+                    </p>
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-white">
+                        15 transaksi terakhir
                     </h2>
                 </div>
-                {{-- Data riwayat dibatasi di Controller/query SQL untuk performa --}}
-                <div class="flex-1 overflow-y-auto max-h-[400px] p-0">
+
+                <div class="flex-1 overflow-y-auto max-h-[380px]">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-50 dark:bg-slate-900/50 sticky top-0 z-10 text-xs uppercase text-slate-500 font-semibold">
+                        <thead class="bg-slate-50 dark:bg-slate-900/60 sticky top-0 z-10 text-[11px] uppercase text-slate-500 font-semibold">
                             <tr>
-                                <th class="px-6 py-3 border-b border-slate-100 dark:border-slate-700 w-1/5">Waktu</th>
-                                <th class="px-6 py-3 border-b border-slate-100 dark:border-slate-700 w-3/5">Detail Transaksi</th>
-                                <th class="px-6 py-3 border-b border-slate-100 dark:border-slate-700 text-right w-1/5">Status</th>
+                                <th class="px-5 sm:px-6 py-2 border-b border-slate-100 dark:border-slate-800 w-1/5">Waktu</th>
+                                <th class="px-5 sm:px-6 py-2 border-b border-slate-100 dark:border-slate-800 w-3/5">Detail</th>
+                                <th class="px-5 sm:px-6 py-2 border-b border-slate-100 dark:border-slate-800 text-right w-1/5">Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100 dark:divide-slate-700 text-sm">
-                            {{-- $recent harus di-pass dari Controller, berisi transaksi terbaru --}}
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                             @forelse($recent as $r)
                                 @php
                                     $r = (object)$r;
-                                    $time = \Illuminate\Support\Carbon::parse($r->created_at ?? now())->format('H:i');
-                                    $bookTitle = $r->book_title ?? 'N/A';
-                                    $studentName = $r->student_name ?? 'Anggota N/A';
-                                    $isReturned = $r->returned_at ?? false;
+                                    $time        = \Illuminate\Support\Carbon::parse($r->created_at ?? now())->format('H:i');
+                                    $bookTitle   = $r->book_title   ?? 'Buku';
+                                    $studentName = $r->student_name ?? 'Anggota';
+                                    $isReturned  = $r->returned_at  ?? false;
                                 @endphp
-                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
-                                    <td class="px-6 py-3 text-slate-500 whitespace-nowrap">{{ $time }}</td>
-                                    <td class="px-6 py-3">
-                                        <div class="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[250px]" title="{{ $bookTitle }}">
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                                    <td class="px-5 sm:px-6 py-2.5 text-slate-500 whitespace-nowrap">
+                                        {{ $time }}
+                                    </td>
+                                    <td class="px-5 sm:px-6 py-2.5">
+                                        <div class="font-medium text-slate-800 dark:text-slate-200 truncate" title="{{ $bookTitle }}">
                                             {{ $bookTitle }}
                                         </div>
-                                        <div class="text-xs text-slate-500 truncate max-w-[250px]">
+                                        <div class="text-xs text-slate-500 truncate">
                                             {{ $studentName }}
                                         </div>
                                     </td>
-                                    <td class="px-6 py-3 text-right">
+                                    <td class="px-5 sm:px-6 py-2.5 text-right">
                                         @if($isReturned)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                         bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
                                                 Kembali
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                                         bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
                                                 Pinjam
                                             </span>
                                         @endif
                                     </td>
                                 </tr>
                             @empty
-                            <tr>
-                                <td colspan="3" class="px-6 py-10 text-center text-slate-400 text-sm italic">
-                                    Belum ada transaksi baru.
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td colspan="3" class="px-6 py-10 text-center text-slate-400 text-sm italic">
+                                        Belum ada transaksi baru di sesi ini.
+                                    </td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -179,50 +238,114 @@
             </section>
         </div>
 
-        {{-- KOLOM KANAN (5/12): MANUAL INPUT (Hanya Tampil Satu Form) --}}
+        {{-- ========== KANAN: FORM MANUAL ========== --}}
         <div class="lg:col-span-5 flex flex-col gap-6">
 
-            {{-- 3. Form Pinjam Manual --}}
-            <section id="manual-panel-borrow" class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-rose-200 dark:border-rose-700 h-full">
-                <h2 class="text-lg font-bold text-rose-500 dark:text-rose-400 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                    Pinjam Manual
+            {{-- 3. PINJAM MANUAL --}}
+            <section id="manual-panel-borrow"
+                     class="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 shadow-sm border border-rose-100 dark:border-rose-800/70">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-500">
+                    Form petugas
+                </p>
+                <h2 class="text-lg font-bold text-slate-800 dark:text-white mt-1">
+                    Pinjam buku (manual)
                 </h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4">
+                    Gunakan jika scan otomatis gagal atau kartu barcodenya rusak.
+                </p>
 
                 <form action="{{ route('circulation.borrow') }}" method="POST" class="space-y-4">
                     @csrf
-                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block -mb-2">ID Siswa</label>
-                    <input name="student_id" placeholder="ID Siswa / NIS" tabindex="2" class="w-full rounded-lg bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500">
-                    
-                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block -mb-2">ID Buku</label>
-                    <input name="book_id"    placeholder="ID Buku / Barcode" tabindex="3" class="w-full rounded-lg bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500">
-                    
-                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block -mb-2">Durasi Pinjam (Hari)</label>
-                    <input type="number" name="days" value="7" min="1" max="30" title="Durasi (Hari)" tabindex="4" class="w-20 text-center rounded-lg bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500">
-                    
-                    <button type="submit" tabindex="5" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl transition shadow-sm shadow-indigo-200 dark:shadow-none">
-                        Proses Pinjam Manual
+                    <div class="manual-input-field">
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
+                            Barcode siswa
+                        </label>
+                        <input name="student_barcode"
+                               placeholder="Scan / ketik barcode siswa"
+                               tabindex="2"
+                               class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700
+                                      focus:ring-2 focus:ring-rose-400 focus:border-rose-400 px-3 py-2.5 text-sm">
+                        @error('student_barcode')
+                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="manual-input-field">
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
+                            Barcode buku
+                        </label>
+                        <input name="book_barcode"
+                               placeholder="Scan / ketik barcode buku"
+                               tabindex="3"
+                               class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700
+                                      focus:ring-2 focus:ring-rose-400 focus:border-rose-400 px-3 py-2.5 text-sm">
+                        @error('book_barcode')
+                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="manual-input-field">
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
+                            Durasi pinjam (hari)
+                        </label>
+                        <input type="number" name="days" value="7" min="1" max="30" title="Durasi (hari)" tabindex="4"
+                               class="w-24 text-center rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700
+                                      focus:ring-2 focus:ring-rose-400 focus:border-rose-400 px-3 py-2 text-sm">
+                    </div>
+
+                    <button type="submit" tabindex="5"
+                            class="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 rounded-xl transition">
+                        Proses pinjam manual
                     </button>
                 </form>
             </section>
-            
-            {{-- 4. Form Kembali Manual (default hidden) --}}
-            <section id="manual-panel-return" class="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-emerald-200 dark:border-emerald-700 h-full hidden">
-                <h2 class="text-lg font-bold text-emerald-500 dark:text-emerald-400 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                    Pengembalian Manual
+
+            {{-- 4. PENGEMBALIAN MANUAL --}}
+            <section id="manual-panel-return"
+                     class="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 shadow-sm border border-emerald-100 dark:border-emerald-800/70 hidden">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-500">
+                    Form petugas
+                </p>
+                <h2 class="text-lg font-bold text-slate-800 dark:text-white mt-1">
+                    Pengembalian buku (manual)
                 </h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4">
+                    Gunakan jika buku dikembalikan tanpa scan otomatis.
+                </p>
 
                 <form action="{{ route('circulation.return') }}" method="POST" class="space-y-4">
                     @csrf
-                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block -mb-2">ID Siswa</label>
-                    <input name="student_id" placeholder="ID Siswa / NIS" tabindex="6" class="w-full rounded-lg bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 focus:border-emerald-500">
-                    
-                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 block -mb-2">ID Buku</label>
-                    <input name="book_id"    placeholder="ID Buku / Barcode" tabindex="7" class="w-full rounded-lg bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:ring-emerald-500 focus:border-emerald-500">
-                    
-                    <button type="submit" tabindex="8" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition shadow-sm shadow-emerald-200 dark:shadow-none">
-                        Proses Kembali Manual
+                    <div class="manual-input-field">
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
+                            Barcode siswa
+                        </label>
+                        <input name="student_barcode"
+                               placeholder="Scan / ketik barcode siswa"
+                               tabindex="6"
+                               class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700
+                                      focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 px-3 py-2.5 text-sm">
+                        @error('student_barcode')
+                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="manual-input-field">
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 block">
+                            Barcode buku
+                        </label>
+                        <input name="book_barcode"
+                               placeholder="Scan / ketik barcode buku"
+                               tabindex="7"
+                               class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700
+                                      focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 px-3 py-2.5 text-sm">
+                        @error('book_barcode')
+                            <p class="mt-1 text-xs text-rose-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <button type="submit" tabindex="8"
+                            class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 rounded-xl transition">
+                        Proses kembali manual
                     </button>
                 </form>
             </section>
@@ -230,7 +353,7 @@
     </div>
 </div>
 
-{{-- =============== JAVASCRIPT SCANNER LOGIC (DISAMAKAN DENGAN VISIT) =============== --}}
+{{-- =============== JAVASCRIPT SCANNER LOGIC =============== --}}
 <script>
 (function () {
     const scanInput   = document.getElementById('scanInput');
@@ -248,22 +371,19 @@
         '#manual-panel-return input, #manual-panel-return button'
     );
 
-    // Hidden form fields
     const fBorrowS = document.getElementById('fBorrowStudent');
     const fBorrowB = document.getElementById('fBorrowBook');
     const fReturnS = document.getElementById('fReturnStudent');
     const fReturnB = document.getElementById('fReturnBook');
 
-    // Styling Classes
-    const activeClass   = ['bg-white', 'text-indigo-600', 'shadow-sm', 'ring-1', 'ring-slate-200', 'dark:bg-slate-700', 'dark:text-white', 'dark:ring-white/10'];
-    const inactiveClass = ['text-slate-500', 'hover:text-slate-700', 'dark:text-slate-400'];
+    const activeClass   = ['bg-white', 'text-sky-700', 'shadow-sm', 'dark:bg-slate-700', 'dark:text-white'];
+    const inactiveClass = ['text-slate-500', 'dark:text-slate-400'];
 
     let mode   = 'borrow';
     let buffer = '';
     let lastTs = 0;
-    const SCAN_GAP = 80; // sedikit dilonggarkan biar scanner lebih aman
+    const SCAN_GAP = 80;
 
-    // --- FOKUS OTOMATIS ---
     const isFocusingManualInput = () => {
         const activeElement = document.activeElement;
         return activeElement &&
@@ -299,14 +419,13 @@
         }
     });
 
-    // --- LOGIKA MODE + RESET ---
     function resetScan() {
         buffer = '';
         if (scanStudent) scanStudent.value = '';
         if (scanBook)    scanBook.value    = '';
         if (scanInput) {
             scanInput.value = '';
-            scanInput.placeholder = "Klik & Scan Barcode...";
+            scanInput.placeholder = "Klik di sini lalu scan barcode siswa...";
         }
     }
 
@@ -340,16 +459,13 @@
 
     setMode('borrow'); // default
 
-    // --- LOGIKA PUSH CODE (SISWA -> BUKU -> SUBMIT) ---
     function pushCode(code) {
         if (!scanStudent.value) {
-            // pertama: asumsikan ID siswa
             scanStudent.value = code;
-            scanInput.placeholder = "Scan Barcode Buku...";
+            scanInput.placeholder = "Sekarang scan barcode buku...";
         } else if (!scanBook.value) {
-            // kedua: asumsikan ID buku
             scanBook.value = code;
-            scanInput.placeholder = "Memproses...";
+            scanInput.placeholder = "Memproses transaksi...";
 
             if (mode === 'borrow') {
                 fBorrowS.value = scanStudent.value;
@@ -361,16 +477,14 @@
                 formReturn.submit();
             }
         } else {
-            // kalau sudah ada dua, mulai sesi baru dengan code ini sebagai siswa
             resetScan();
             scanStudent.value = code;
-            scanInput.placeholder = "Scan Barcode Buku...";
+            scanInput.placeholder = "Sekarang scan barcode buku...";
         }
 
-        scanInput.value = ''; // kosongkan input fisik
+        scanInput.value = '';
     }
 
-    // --- EVENT SCANNER ---
     scanInput.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             e.preventDefault();
@@ -389,7 +503,6 @@
         if (e.key === 'Enter') {
             e.preventDefault();
 
-            // pakai buffer, tapi kalau kosong fallback ke isi input
             const code = (buffer || scanInput.value).trim();
             buffer = '';
             scanInput.value = '';

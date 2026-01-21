@@ -5,15 +5,21 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void {
+    public function up(): void
+    {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->default('staff')->after('email');
-            $table->boolean('active')->default(true)->after('role');
+            if (! Schema::hasColumn('users', 'role')) {
+                $table->string('role', 20)->default('petugas')->after('email');
+            }
         });
     }
-    public function down(): void {
+
+    public function down(): void
+    {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['role','active']);
+            if (Schema::hasColumn('users', 'role')) {
+                $table->dropColumn('role');
+            }
         });
     }
 };

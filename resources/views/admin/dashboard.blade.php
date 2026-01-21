@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
 
-    {{-- =============== HERO SECTION =============== --}}
+    {{-- =============== HERO SECTION (hanya ganti teks Admin → Petugas) =============== --}}
     <section class="relative overflow-hidden rounded-3xl min-h-[240px] md:min-h-[280px] shadow-xl ring-1 ring-slate-900/5">
         <img src="/assets/bg-dalamsekoalh.jpeg"
              class="absolute inset-0 w-full h-full object-cover object-center brightness-75 dark:brightness-50"
@@ -14,7 +14,7 @@
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
                 <div>
                     <h1 class="text-3xl md:text-4xl font-black tracking-tight text-white drop-shadow-md">
-                        Dashboard Admin
+                        Dashboard Petugas
                     </h1>
                     <p class="mt-2 text-slate-300 font-medium text-sm md:text-base max-w-lg">
                         Selamat datang kembali. Berikut adalah ringkasan aktivitas perpustakaan.
@@ -49,7 +49,7 @@
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {{-- Card 1: Buku --}}
         <a href="{{ route('admin.books.index', [], false) }}"
-           class="group relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl p-6
+           class="group cursor-pointer relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl p-6
                   shadow-sm hover:shadow-xl border border-slate-200 dark:border-slate-700
                   transition-all duration-300 hover:-translate-y-1">
             <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full
@@ -79,7 +79,7 @@
 
         {{-- Card 2: Anggota --}}
         <a href="{{ route('admin.students.index', [], false) }}"
-           class="group relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl p-6
+           class="group cursor-pointer relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl p-6
                   shadow-sm hover:shadow-xl border border-slate-200 dark:border-slate-700
                   transition-all duration-300 hover:-translate-y-1">
             <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full
@@ -107,11 +107,17 @@
             </div>
         </a>
 
-        {{-- Card 3: Dipinjam --}}
-        <div class="group relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl p-6
-                    shadow-sm border border-slate-200 dark:border-slate-700">
+        {{-- Card 3: Dipinjam → history sirkulasi (peminjaman hari ini) --}}
+        <a href="{{ route('circulation.history', [
+                    'type' => 'loans',
+                    'from' => $currentDate->toDateString(),
+                    'to'   => $currentDate->toDateString(),
+                ], false) }}"
+           class="group cursor-pointer relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl p-6
+                    shadow-sm hover:shadow-xl border border-slate-200 dark:border-slate-700
+                    transition-all duration-300 hover:-translate-y-1">
             <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full
-                        bg-amber-50 dark:bg-amber-900/20"></div>
+                        bg-amber-50 dark:bg-amber-900/20 transition-transform group-hover:scale-110"></div>
             <div class="relative space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.12em]">
@@ -133,13 +139,18 @@
                     </span>
                 </div>
             </div>
-        </div>
+        </a>
 
-        {{-- Card 4: Kunjungan --}}
-        <div class="group relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl p-6
-                    shadow-sm border border-slate-200 dark:border-slate-700">
+        {{-- Card 4: Kunjungan → history kunjungan (hari ini) --}}
+        <a href="{{ route('visits.history', [
+                    'from' => $currentDate->toDateString(),
+                    'to'   => $currentDate->toDateString(),
+                ], false) }}"
+           class="group cursor-pointer relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl p-6
+                    shadow-sm hover:shadow-xl border border-slate-200 dark:border-slate-700
+                    transition-all duration-300 hover:-translate-y-1">
             <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 rounded-full
-                        bg-blue-50 dark:bg-blue-900/20"></div>
+                        bg-blue-50 dark:bg-blue-900/20 transition-transform group-hover:scale-110"></div>
             <div class="relative space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.12em]">
@@ -181,10 +192,10 @@
                     </span>
                 </div>
             </div>
-        </div>
+        </a>
     </section>
 
-    {{-- =============== CHART SECTION =============== --}}
+    {{-- =============== CHART SECTION (tetap) =============== --}}
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- 1. HARIAN --}}
         <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col">
@@ -259,11 +270,11 @@
                         Total per bulan
                     </p>
                 </div>
-                <input type="month"
-                       class="text-xs border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700
-                              text-slate-600 dark:text-slate-200 focus:ring-indigo-500 px-2 py-1"
-                       value="{{ request('month', $currentDate->format('Y-m')) }}"
-                       onchange="updateFilter('month', this.value)">
+            <input type="month"
+                   class="text-xs border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700
+                          text-slate-600 dark:text-slate-200 focus:ring-indigo-500 px-2 py-1"
+                   value="{{ request('month', $currentDate->format('Y-m')) }}"
+                   onchange="updateFilter('month', this.value)">
             </div>
             <div class="flex-grow flex flex-col items-center justify-center">
                 <div id="chartMonthly" class="w-full flex justify-center"></div>

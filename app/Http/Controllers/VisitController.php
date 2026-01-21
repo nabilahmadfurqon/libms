@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Visit;
+use App\Models\Student; // ⬅️ TAMBAHAN: pakai model Student
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -76,38 +77,53 @@ class VisitController extends Controller
 
     /**
      * Simpan kunjungan baru (hasil scan barcode atau input manual per siswa)
-     * Aturan: 1 siswa hanya boleh 1x kunjungan per hari.
+     * Aturan:
+     *  - Barcode HARUS sudah ada di master students.barcode
+     *  - 1 siswa hanya boleh 1x kunjungan per hari.
      */
     public function store(Request $r)
     {
+        // ⬅️ DI SINI BERUBAH: kita terima student_barcode, bukan langsung student_id
         $data = $r->validate([
-            'student_id' => 'required|string',
-            'purpose'    => 'nullable|string|max:50',
+            'student_barcode' => 'required|string',
+            'purpose'         => 'nullable|string|max:50',
         ]);
+
+        // 1. CARI SISWA DI MASTER BERDASARKAN BARCODE
+        $student = Student::where('barcode', $data['student_barcode'])->first();
+
+        if (! $student) {
+            // ❌ BARCODE TIDAK ADA DI MASTER → STOP, JANGAN BUAT VISIT
+            return back()
+                ->withErrors([
+                    'student_barcode' => 'Siswa dengan barcode ini belum terdaftar di master. Silakan minta admin menambahkan data siswa terlebih dahulu.',
+                ])
+                ->withInput();
+        }
 
         $today = Carbon::today()->toDateString();
 
-        // CEK: apakah siswa ini sudah melakukan visit hari ini?
-        $alreadyVisited = Visit::where('student_id', $data['student_id'])
+        // 2. CEK: apakah siswa ini sudah melakukan visit hari ini?
+        $alreadyVisited = Visit::where('student_id', $student->student_id)
             ->whereDate('visited_at', $today)
             ->exists();
 
         if ($alreadyVisited) {
-            // Kalau pakai view yang baca $errors, pakai withErrors
             return back()
-                ->withErrors(['student_id' => 'Siswa ini sudah tercatat kunjungan hari ini.'])
+                ->withErrors([
+                    'student_barcode' => 'Siswa ini sudah tercatat kunjungan hari ini.',
+                ])
                 ->withInput();
-            // Kalau mau pakai session('err') juga boleh:
-            // ->with('err', 'Siswa ini sudah tercatat kunjungan hari ini.');
         }
 
+        // 3. SIMPAN KUNJUNGAN (PAKAI student_id DARI MASTER)
         Visit::create([
-            'student_id' => $data['student_id'],
+            'student_id' => $student->student_id,     // tetap pakai kode siswa (NIS)
             'purpose'    => $data['purpose'] ?? null,
-            'visited_at' => now(), // supaya muncul di history & hari ini
+            'visited_at' => now(),
         ]);
 
-        return back()->with('ok', 'Kunjungan dicatat.');
+        return back()->with('ok', 'Kunjungan untuk ' . $student->name . ' berhasil dicatat.');
     }
 
     /**
@@ -142,8 +158,6 @@ class VisitController extends Controller
             return back()
                 ->withErrors(['class' => 'Kunjungan kelas ' . $className . ' sudah tercatat hari ini.'])
                 ->withInput();
-            // atau jika mau pakai session('err'):
-            // ->with('err', 'Kunjungan kelas ' . $className . ' sudah tercatat hari ini.');
         }
 
         Visit::create([

@@ -33,10 +33,13 @@ public function book()
     public function scopeActive($q){ return $q->whereNull('returned_at'); }
 
     // Telat (SQLite)
-    public function scopeOverdue($q){
-        return $q->whereNull('returned_at')
-                 ->whereRaw("julianday(created_at, '+' || days || ' days') < julianday('now')");
-    }
+    public function scopeOverdue($query)
+{
+    return $query
+        ->whereNull('returned_at')
+        ->whereRaw("DATE_ADD(created_at, INTERVAL days DAY) < NOW()");
+}
+
 
     // Accessors bantu di Blade
     protected $appends = ['due_at','is_overdue','days_left'];

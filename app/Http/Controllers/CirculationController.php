@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Loan;
+use App\Models\Student;
+use App\Models\Book;
 use Carbon\Carbon;
 
 class CirculationController extends Controller
@@ -25,7 +27,7 @@ class CirculationController extends Controller
             ->limit(12)
             ->get();
 
-        // KPI kecil (hari ini) – gunakan rentang waktu agar portable
+        // KPI kecil (hari ini)
         $start = now()->startOfDay();
         $end   = now()->endOfDay();
 
@@ -39,8 +41,7 @@ class CirculationController extends Controller
 
     /**
      * Riwayat sirkulasi + filter tanggal & tipe.
-     * Route yang dipakai: GET /circulation/history
-     * Query: ?type=loans|returns|overdue|all&from=YYYY-MM-DD&to=YYYY-MM-DD
+     * Route: GET /circulation/history
      */
     public function history(Request $r)
     {
@@ -58,7 +59,6 @@ class CirculationController extends Controller
                 'books.title as book_title'
             );
 
-        // filter per type
         if ($type === 'returns') {
             $q->whereNotNull('loans.returned_at')
               ->whereBetween('loans.returned_at', [$from, $to])
@@ -67,17 +67,13 @@ class CirculationController extends Controller
             $q->whereNull('loans.returned_at')
               ->where('loans.due_at','<', $to)
               ->orderByDesc('loans.due_at');
-        } elseif ($type === 'all') {
-            $q->whereBetween(DB::raw("COALESCE(loans.loaned_at, loans.created_at)"), [$from, $to])
-              ->orderByDesc(DB::raw("COALESCE(loans.loaned_at, loans.created_at)"));
-        } else { // loans
+        } else { // loans atau all
             $q->whereBetween(DB::raw("COALESCE(loans.loaned_at, loans.created_at)"), [$from, $to])
               ->orderByDesc(DB::raw("COALESCE(loans.loaned_at, loans.created_at)"));
         }
 
         $rows = $q->paginate(20)->appends($r->query());
 
-        // Statistik ringkas (tanpa JOIN supaya cepat & bebas ambigu)
         $stats = [
             'loans'   => Loan::whereBetween(DB::raw("COALESCE(loaned_at, created_at)"), [$from,$to])->count(),
             'returns' => Loan::whereNotNull('returned_at')->whereBetween('returned_at', [$from,$to])->count(),
@@ -87,66 +83,124 @@ class CirculationController extends Controller
         return view('circulation.history', compact('rows','type','from','to','stats'));
     }
 
+    /**
+     * PINJAM BUKU
+     * SEKARANG INPUT PAKAI:
+     *  - student_barcode
+     *  - book_barcode
+     */
     public function borrow(Request $r)
     {
         $data = $r->validate([
-            'student_id' => 'required|string',
-            'book_id'    => 'required|string',
-            'days'       => 'nullable|integer|min:1|max:30',
+            'student_barcode' => 'required|string',
+            'book_barcode'    => 'required|string',
+            'days'            => 'nullable|integer|min:1|max:30',
         ]);
 
         $days = (int)($data['days'] ?? 7);
 
-        // cek buku
-        $book = DB::table('books')->where('book_id',$data['book_id'])->first();
-        if (!$book) {
-            return back()->with('err','Buku tidak ditemukan.');
-        }
-        if ((int)($book->available_copies ?? 0) < 1) {
-            return back()->with('err','Stok buku habis.');
+        // 1. CARI MASTER SISWA BERDASARKAN BARCODE
+        $student = Student::where('barcode', $data['student_barcode'])->first();
+
+        if (! $student) {
+            return back()
+                ->withErrors([
+                    'student_barcode' => 'Siswa dengan barcode ini belum terdaftar di master. Silakan minta admin untuk input siswa dulu.',
+                ])
+                ->withInput();
         }
 
-        // buat pinjaman
+        // 2. CARI MASTER BUKU BERDASARKAN BARCODE
+        $book = Book::where('barcode', $data['book_barcode'])->first();
+
+        if (! $book) {
+            return back()
+                ->withErrors([
+                    'book_barcode' => 'Buku dengan barcode ini belum terdaftar di master. Silakan minta admin untuk input buku dulu.',
+                ])
+                ->withInput();
+        }
+
+        // 3. CEK STOK BUKU
+        if ((int)($book->available_copies ?? 0) < 1) {
+            return back()
+                ->withErrors([
+                    'book_barcode' => 'Stok buku habis / tidak tersedia.',
+                ])
+                ->withInput();
+        }
+
+        // 4. BUAT PINJAMAN
+        //    PERHATIKAN: loans.student_id & loans.book_id pakai KODE (student_id, book_id) bukan ID numeric
         $loan = Loan::create([
-            'student_id' => $data['student_id'],
-            'book_id'    => $data['book_id'],
+            'student_id' => $student->student_id,   // dari master
+            'book_id'    => $book->book_id,        // dari master
             'days'       => $days,
             'loaned_at'  => now(),
             'due_at'     => now()->addDays($days),
         ]);
 
-        // kurangi stok
-        DB::table('books')
-            ->where('book_id',$data['book_id'])
-            ->update([
-                'available_copies' => max(0, (int)$book->available_copies - 1)
-            ]);
+        // 5. KURANGI STOK
+        $book->update([
+            'available_copies' => max(0, (int)$book->available_copies - 1),
+        ]);
 
         return back()->with('ok','Peminjaman dicatat. Jatuh tempo: '.$loan->due_at->format('d M Y'));
     }
 
+    /**
+     * PENGEMBALIAN
+     * JUGA PAKAI BARCODE, BUKAN KODE MANUAL
+     */
     public function return(Request $r)
     {
         $data = $r->validate([
-            'student_id' => 'required|string',
-            'book_id'    => 'required|string',
+            'student_barcode' => 'required|string',
+            'book_barcode'    => 'required|string',
         ]);
 
+        // 1. CARI SISWA & BUKU DI MASTER
+        $student = Student::where('barcode', $data['student_barcode'])->first();
+        $book    = Book::where('barcode', $data['book_barcode'])->first();
+
+        if (! $student) {
+            return back()
+                ->withErrors([
+                    'student_barcode' => 'Siswa dengan barcode ini tidak ditemukan di master.',
+                ])
+                ->withInput();
+        }
+
+        if (! $book) {
+            return back()
+                ->withErrors([
+                    'book_barcode' => 'Buku dengan barcode ini tidak ditemukan di master.',
+                ])
+                ->withInput();
+        }
+
+        // 2. CARI TRANSAKSI PINJAM YANG MASIH AKTIF
         $loan = Loan::whereNull('returned_at')
-            ->where('student_id',$data['student_id'])
-            ->where('book_id',$data['book_id'])
+            ->where('student_id', $student->student_id) // pakai kode
+            ->where('book_id', $book->book_id)
             ->orderByDesc(DB::raw("COALESCE(loaned_at, created_at)"))
             ->first();
 
-        if (!$loan) {
-            return back()->with('err','Transaksi aktif tidak ditemukan.');
+        if (! $loan) {
+            return back()
+                ->withErrors([
+                    'book_barcode' => 'Transaksi peminjaman aktif untuk buku ini oleh siswa tersebut tidak ditemukan.',
+                ])
+                ->withInput();
         }
 
-        $loan->update(['returned_at' => now()]);
+        // 3. UPDATE PENGEMBALIAN
+        $loan->update([
+            'returned_at' => now(),
+        ]);
 
-        DB::table('books')
-            ->where('book_id',$data['book_id'])
-            ->increment('available_copies');
+        // 4. TAMBAH STOK
+        $book->increment('available_copies');
 
         return back()->with('ok','Pengembalian dicatat.');
     }

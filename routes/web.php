@@ -1,27 +1,49 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+// CONTROLLERS
+use App\Http\Controllers\HomeDashboardController;
+use App\Http\Controllers\Auth\KioskLogoutController;
+
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\StudentController;
-use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ReportController;
+
 use App\Http\Controllers\CirculationController;
 use App\Http\Controllers\VisitController;
-use App\Http\Controllers\Petugas\PetugasDashboardController;
+// Kalau masih pakai PetugasDashboard, bisa di-include:
+// use App\Http\Controllers\Petugas\PetugasDashboardController;
 use App\Http\Controllers\BarcodeController;
 
+// Landing → redirect ke login
 Route::get('/', fn () => redirect()->route('login'));
 
-// SEMUA ROUTE YANG BUTUH LOGIN
+// ========== ROUTE YANG BUTUH LOGIN ==========
 Route::middleware(['auth'])->group(function () {
 
-    // ---------- ADMIN ----------
-    Route::middleware('role:admin')->group(function () {
+    /**
+     * SATU PINTU DASHBOARD
+     * Semua user login diarahkan ke /dashboard
+     * - petugas    → admin.dashboard
+     * - pengunjung → pengunjung.dashboard
+     */
+    Route::get('/dashboard', HomeDashboardController::class)
+        ->name('dashboard');
 
-        // Dashboard Admin (DashboardController pakai __invoke)
-        Route::get('/admin/dashboard', DashboardController::class)
+    // ========== PETUGAS ==========
+    // Role ini menggabungkan "admin" + "petugas" lama.
+    Route::middleware('role:petugas')->group(function () {
+
+        // DASHBOARD ADMIN (petugas)
+        Route::get('/admin/dashboard', AdminDashboardController::class)
             ->name('admin.dashboard');
+
+        // JSON untuk auto-refresh KPI & chart dashboard
+        Route::get('/admin/dashboard/data', [AdminDashboardController::class, 'data'])
+            ->name('admin.dashboard.data');
 
         // Manajemen User (CRUD)
         Route::resource('/admin/users', UserController::class)
@@ -65,11 +87,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/students/sample', [StudentController::class, 'sample'])
             ->name('admin.students.sample');
 
-        // ✅ Export data siswa (pakai filter q juga nanti di controller)
+        // Export data siswa
         Route::get('/admin/students/export', [StudentController::class, 'export'])
             ->name('admin.students.export');
 
-        // ---------- BARCODE (khusus admin) ----------
+        // ---------- BARCODE ----------
         Route::get('/admin/barcodes/books', [BarcodeController::class, 'books'])
             ->name('admin.barcodes.books');
 
@@ -81,16 +103,12 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/admin/barcodes/students/preview', [BarcodeController::class, 'studentsPreview'])
             ->name('admin.barcodes.students.preview');
-    });
 
-    // ---------- PETUGAS ----------
-    Route::middleware('role:petugas')->group(function () {
+        // (Kalau masih ingin Dashboard Petugas terpisah, boleh hidupkan lagi:)
+        // Route::get('/petugas/dashboard', PetugasDashboardController::class)
+        //     ->name('petugas.dashboard');
 
-        // Dashboard petugas
-        Route::get('/petugas/dashboard', PetugasDashboardController::class)
-            ->name('petugas.dashboard');
-
-        // ---------- SIRKULASI ----------
+        // ---------- SIRKULASI (PETUGAS) ----------
         Route::prefix('circulation')->group(function () {
             Route::get('/', [CirculationController::class, 'index'])
                 ->name('circulation.index');
@@ -105,7 +123,7 @@ Route::middleware(['auth'])->group(function () {
                 ->name('circulation.history');
         });
 
-        // ---------- KUNJUNGAN ----------
+        // ---------- KUNJUNGAN (PETUGAS) ----------
         Route::prefix('visits')->group(function () {
             Route::get('/', [VisitController::class, 'index'])
                 ->name('visits.index');
@@ -115,12 +133,39 @@ Route::middleware(['auth'])->group(function () {
 
             Route::get('/history', [VisitController::class, 'history'])
                 ->name('visits.history');
+                Route::post('/class', [VisitController::class, 'storeClass'])
+        ->name('visits.store-class');
+
         });
     });
 
-    // ---------- SHARED ROUTES (Admin & Petugas) ----------
-    Route::middleware('role:admin,petugas')->group(function () {
-        // Tambahkan route gabungan di sini kalau nanti ada
+    // ========== PENGUNJUNG (KIOSK / SISWA) ==========
+    Route::middleware('role:pengunjung')->group(function () {
+
+        // Dashboard pengunjung → kita pakai halaman visit scanner
+        Route::get('/pengunjung/dashboard', [VisitController::class, 'index'])
+            ->name('pengunjung.dashboard');
+
+        // Scan kunjungan mandiri
+        Route::post('/pengunjung/visits', [VisitController::class, 'store'])
+            ->name('pengunjung.visits.store');
+
+        // (Opsional) kalau mau pengunjung bisa sirkulasi mandiri:
+        Route::get('/pengunjung/circulation', [CirculationController::class, 'index'])
+            ->name('pengunjung.circulation.index');
+
+        Route::post('/pengunjung/circulation/borrow', [CirculationController::class, 'borrow'])
+            ->name('pengunjung.circulation.borrow');
+
+        Route::post('/pengunjung/circulation/return', [CirculationController::class, 'return'])
+            ->name('pengunjung.circulation.return');
+
+        // Logout kiosk khusus (pakai password)
+        Route::get('/pengunjung/logout', [KioskLogoutController::class, 'show'])
+            ->name('pengunjung.logout.show');
+
+        Route::post('/pengunjung/logout', [KioskLogoutController::class, 'confirm'])
+            ->name('pengunjung.logout.confirm');
     });
 });
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -19,36 +20,31 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Proses login & redirect berdasarkan role.
+     * Proses login.
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Proses autentikasi sesuai LoginRequest
         $request->authenticate();
+
+        // Regenerate session untuk keamanan
         $request->session()->regenerate();
 
-        $user = $request->user();
-
-        $target = match ($user?->role) {
-            'admin'   => route('admin.dashboard', absolute: false),
-            'petugas' => route('petugas.dashboard', absolute: false),
-            default   => '/login',
-        };
-
-        return redirect()->intended($target);
+        // Setelah login → selalu diarahkan ke /dashboard
+        // /dashboard akan ditangani oleh HomeDashboardController
+        return redirect()->intended('/dashboard');
     }
 
     /**
-     * Logout.
+     * Logout (dipakai oleh petugas; pengunjung pakai controller khusus).
      */
-    public function destroy(): RedirectResponse
+    public function destroy(Request $request): RedirectResponse
     {
-        // gunakan helper agar linter tak protes
-        $req = request();
-
         Auth::guard('web')->logout();
-        $req->session()->invalidate();
-        $req->session()->regenerateToken();
 
-        return redirect('/'); // kembali ke login
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
     }
 }
